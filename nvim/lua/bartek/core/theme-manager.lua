@@ -6,8 +6,13 @@ local M = {}
 
 -- Available themes
 M.themes = {
-	{ name = "tokyonight", desc = "TokyoNight - Modern Dark", ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" } },
-	{ name = "vscode", desc = "VS Code Dark+ - Familiar", ft = { "c", "cpp", "objc", "objcpp" } },
+	{
+		name = "tokyonight",
+		desc = "TokyoNight - Modern Dark",
+		ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
+	},
+	{ name = "vscode", desc = "VS Code Dark+ - C/C++", ft = { "c", "cpp" } },
+	{ name = "xcodedark", desc = "Xcode Dark - Apple Ecosystem 🍎", ft = { "swift", "objc", "objcpp", "podspec" } },
 	{ name = "catppuccin", desc = "Catppuccin - Pastel", ft = { "python", "go", "rust" } },
 	{ name = "rose-pine", desc = "Rosé Pine - Elegant", ft = { "markdown", "text" } },
 	{ name = "dracula", desc = "Dracula - Popular Dark", ft = {} },
@@ -16,6 +21,7 @@ M.themes = {
 	{ name = "everforest", desc = "Everforest - Comfortable Green", ft = {} },
 	{ name = "onedark", desc = "OneDark - Atom Classic", ft = {} },
 	{ name = "monokai-pro", desc = "Monokai Pro - Professional", ft = {} },
+	{ name = "xcodelight", desc = "Xcode Light - Apple's Light ☀️", ft = {} },
 	{ name = "github_dark", desc = "GitHub Dark", ft = {} },
 	{ name = "github_light", desc = "GitHub Light", ft = {} },
 	{ name = "nightfox", desc = "Nightfox - Dark Fox", ft = {} },
@@ -24,28 +30,38 @@ M.themes = {
 
 M.default_theme = "tokyonight"
 M.current_theme = nil
-M.auto_switch = true  -- Enable auto-switch
+M.auto_switch = false -- Enable auto-switch
 M.switching = false
-M.last_ft = nil  -- Track last filetype to prevent redundant switches
+M.last_ft = nil -- Track last filetype to prevent redundant switches
 
 -- Persistence
-M.data_file = vim.fn.stdpath("data") .. "/theme.txt"
+M.data_file = vim.fn.stdpath("data") .. "/theme-settings.json"
 
-function M.save_theme()
+function M.save_settings()
+	local settings = {
+		theme = M.current_theme or M.default_theme,
+		auto_switch = M.auto_switch,
+	}
 	local file = io.open(M.data_file, "w")
 	if file then
-		file:write(M.current_theme or M.default_theme)
+		file:write(vim.json.encode(settings))
 		file:close()
 	end
 end
 
-function M.load_theme()
+function M.load_settings()
 	local file = io.open(M.data_file, "r")
 	if file then
-		local theme = file:read("*a"):gsub("%s+", "")
+		local content = file:read("*a")
 		file:close()
-		if theme and theme ~= "" then
-			M.default_theme = theme
+		local ok, settings = pcall(vim.json.decode, content)
+		if ok and settings then
+			if settings.theme then
+				M.default_theme = settings.theme
+			end
+			if settings.auto_switch ~= nil then
+				M.auto_switch = settings.auto_switch
+			end
 		end
 	end
 end
@@ -60,7 +76,7 @@ function M.apply_theme(theme_name, silent)
 	local ok = pcall(vim.cmd.colorscheme, theme_name)
 	if ok then
 		M.current_theme = theme_name
-		M.save_theme()
+		M.save_settings()
 		if not silent then
 			vim.notify("Theme: " .. theme_name, vim.log.levels.INFO)
 		end
@@ -220,12 +236,13 @@ end
 
 function M.toggle_auto_switch()
 	M.auto_switch = not M.auto_switch
-	vim.notify("Auto-switch: " .. (M.auto_switch and "ON" or "OFF"))
+	M.save_settings()
+	vim.notify("Auto-switch: " .. (M.auto_switch and "ON" or "OFF"), vim.log.levels.INFO)
 end
 
 function M.setup()
-	-- Load saved theme
-	M.load_theme()
+	-- Load saved settings (theme + auto_switch)
+	M.load_settings()
 
 	-- Apply immediately
 	M.apply_theme(M.default_theme, true)
@@ -242,9 +259,15 @@ function M.setup()
 
 	-- Keybindings
 	vim.keymap.set("n", "<leader>ut", M.pick_theme, { desc = "Theme picker" })
-	vim.keymap.set("n", "<leader>u1", function() M.apply_theme("tokyonight") end, { desc = "TokyoNight" })
-	vim.keymap.set("n", "<leader>u2", function() M.apply_theme("vscode") end, { desc = "VS Code" })
-	vim.keymap.set("n", "<leader>u3", function() M.apply_theme("rose-pine") end, { desc = "Rosé Pine" })
+	vim.keymap.set("n", "<leader>u1", function()
+		M.apply_theme("tokyonight")
+	end, { desc = "TokyoNight" })
+	vim.keymap.set("n", "<leader>u2", function()
+		M.apply_theme("vscode")
+	end, { desc = "VS Code (C/C++)" })
+	vim.keymap.set("n", "<leader>u3", function()
+		M.apply_theme("rose-pine")
+	end, { desc = "Rosé Pine" })
 	vim.keymap.set("n", "<leader>u]", M.next_theme, { desc = "Next theme" })
 	vim.keymap.set("n", "<leader>u[", M.prev_theme, { desc = "Prev theme" })
 	vim.keymap.set("n", "<leader>ua", M.toggle_auto_switch, { desc = "Toggle auto-switch" })

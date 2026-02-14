@@ -1,0 +1,31 @@
+# This is the configuration file for Ghostty.
+
+# --- Font Configuration ---
+font-family = "MesloLGS Nerd Font"
+font-size = 12
+
+# --- Window & Appearance ---
+# Removes the macOS title bar for that clean, seamless look
+macos-titlebar-style = hidden
+# Use left Option as Alt, right Option for special characters (Polish: ą, ć, ę, ł, ń, ó, ś, ź, ż)
+macos-option-as-alt = left
+
+# Transparency (0.0 to 1.0)
+# 0.85 is a "sweet spot" where you see the wallpaper but text remains legible
+background-opacity = 0.85
+background-blur-radius = 20
+
+# Adds some breathing room inside the terminal window
+window-padding-x = 10
+window-padding-y = 10
+
+# --- Mouse & Behavior ---
+mouse-hide-while-typing = true
+copy-on-select = true
+
+# theme = catppuccin-mocha
+
+keybind = option+backspace=text:\x1b\x7f
+
+
+

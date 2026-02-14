@@ -270,4 +270,19 @@ return {
 			})
 		end,
 	},
+
+	-- ============================================
+	-- Xcode - Apple's Xcode color schemes
+	-- ============================================
+	{
+		"arzg/vim-colors-xcode",
+		priority = 1000,
+		lazy = true,
+		config = function()
+			vim.g.xcodedark_green_comments = 1
+			vim.g.xcodedark_emph_types = 1
+			vim.g.xcodedark_emph_funcs = 1
+			vim.g.xcodedark_emph_idents = 1
+		end,
+	},
 }

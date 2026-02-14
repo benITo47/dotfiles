@@ -1,0 +1,33 @@
+# Ignore everything by default
+*
+
+# Allow core nvim config files
+!init.lua
+!lazy-lock.json
+!.obsidian.vimrc
+
+# Allow lua directory and its contents
+!lua/
+!lua/**
+
+# Allow .nvim directory
+!.nvim/
+!.nvim/**
+
+# Allow dotfiles directories
+!tmux/
+!tmux/**
+!ghostty/
+!ghostty/**
+
+# Allow installation and documentation
+!install.sh
+!README.md
+!.gitignore
+
+# Explicitly ignore temporary and generated files
+*.log
+*.tmp
+.DS_Store
+test.json
+*.md
