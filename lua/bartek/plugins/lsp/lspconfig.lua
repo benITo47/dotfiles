@@ -18,23 +18,28 @@ return {
 			callback = function(ev)
 				local opts = { buffer = ev.buf, silent = true }
 
-				opts.desc = "Show LSP references"
-				map("n", "gR", "<cmd>Telescope lsp_references<CR>", opts)
+				-- LSP Navigation
+				opts.desc = "Goto Definition"
+				map("n", "gd", vim.lsp.buf.definition, opts)
 
-				opts.desc = "Go to declaration"
+				opts.desc = "Goto Declaration"
 				map("n", "gD", vim.lsp.buf.declaration, opts)
 
-				opts.desc = "Show LSP definitions"
-				map("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
+				opts.desc = "Show References"
+				map("n", "gr", vim.lsp.buf.references, opts)
 
-				opts.desc = "Show LSP implementations"
-				map("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
+				opts.desc = "Goto Implementation"
+				map("n", "gI", vim.lsp.buf.implementation, opts)
 
-				opts.desc = "Show LSP type definitions"
-				map("n", "gt", "<cmd>Telescope lsp_type_definitions<CR>", opts)
+				opts.desc = "Goto Type Definition"
+				map("n", "gy", vim.lsp.buf.type_definition, opts)
 
+				-- LSP Actions
 				opts.desc = "Smart rename"
 				map("n", "<leader>rn", vim.lsp.buf.rename, opts)
+
+				opts.desc = "Code Actions"
+				map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
 
 				opts.desc = "Show buffer diagnostics"
 				map("n", "<leader>dD", "<cmd>Telescope diagnostics bufnr=0<CR>", opts)
@@ -58,7 +63,8 @@ return {
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 		end
 
-		mason_lspconfig.setup({
+		mason_lspconfig.setup_handlers({
+			-- Default handler for all servers
 			function(server_name)
 				vim.lsp.config(server_name, {
 					capabilities = capabilities,
@@ -66,6 +72,7 @@ return {
 				vim.lsp.enable(server_name)
 			end,
 
+			-- Specific server configurations
 			["lua_ls"] = function()
 				vim.lsp.config("lua_ls", {
 					capabilities = capabilities,
@@ -166,24 +173,29 @@ return {
 					cmd = {
 						"clangd",
 						"--background-index",
-						"-j=12",
-						"--query-driver=/opt/homebrew/opt/llvm/bin/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++",
 						"--clang-tidy",
-						"--clang-tidy-checks=*",
-						"--all-scopes-completion",
-						"--cross-file-rename",
 						"--completion-style=detailed",
-						"--header-insertion-decorators",
 						"--header-insertion=iwyu",
+						"--header-insertion-decorators",
 						"--pch-storage=memory",
 					},
-					capabilities = capabilities,
-					filetypes = { "c", "cpp", "objc", "objcpp" },
+					capabilities = vim.tbl_deep_extend("force", capabilities, {
+						offsetEncoding = { "utf-16" },
+					}),
+					filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+					root_dir = function(fname)
+						return require("lspconfig.util").root_pattern(
+							".clangd",
+							".clang-tidy",
+							".clang-format",
+							"compile_commands.json",
+							"compile_flags.txt",
+							"configure.ac",
+							".git"
+						)(fname) or vim.fn.getcwd()
+					end,
 					init_options = {
-						clangdFileStatus = true,
-						fallbackFlags = { "-std=c++17" },
-						clangTidy = true,
-						semanticHighlighting = true,
+						fallbackFlags = { "-std=c++20" },
 					},
 				})
 				vim.lsp.enable("clangd")
@@ -205,16 +217,21 @@ return {
 			--
 		})
 
-		-- Standalone sourcekit setup
-		vim.lsp.config("sourcekit", {
-			-- capabilities = capabilities,
-			capabilities = {
+		-- Standalone sourcekit setup with merged capabilities
+		local sourcekit_capabilities = vim.tbl_deep_extend(
+			"force",
+			capabilities,
+			{
 				workspace = {
 					didChangeWatchedFiles = {
 						dynamicRegistration = true,
 					},
 				},
-			},
+			}
+		)
+
+		vim.lsp.config("sourcekit", {
+			capabilities = sourcekit_capabilities,
 		})
 		vim.lsp.enable("sourcekit")
 	end,

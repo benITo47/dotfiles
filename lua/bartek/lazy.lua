@@ -15,10 +15,10 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({{import = "bartek.plugins"}, {import = "bartek.plugins.lsp"}}, {
     checker = {
-        enabled = true, 
+        enabled = true,
         notify = false,
     },
     change_detection = {
-        notfiy = false,
+        notify = false,
     }
 })

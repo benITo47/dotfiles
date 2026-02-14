@@ -163,13 +163,13 @@ return {
 			end,
 			desc = "Recent",
 		},
-		-- git
+		-- git (gb/gB reserved for git blame in gitsigns)
 		{
-			"<leader>gb",
+			"<leader>gv",
 			function()
 				Snacks.picker.git_branches()
 			end,
-			desc = "Git Branches",
+			desc = "Git Branches (view)",
 		},
 		{
 			"<leader>gl",
@@ -301,7 +301,7 @@ return {
 			desc = "Buffer Diagnostics",
 		},
 		{
-			"<leader>sh",
+			"<leader>s?",
 			function()
 				Snacks.picker.help()
 			end,
@@ -391,43 +391,7 @@ return {
 			end,
 			desc = "Colorschemes",
 		},
-		-- LSP
-		{
-			"gd",
-			function()
-				Snacks.picker.lsp_definitions()
-			end,
-			desc = "Goto Definition",
-		},
-		{
-			"gD",
-			function()
-				Snacks.picker.lsp_declarations()
-			end,
-			desc = "Goto Declaration",
-		},
-		{
-			"gr",
-			function()
-				Snacks.picker.lsp_references()
-			end,
-			nowait = true,
-			desc = "References",
-		},
-		{
-			"gI",
-			function()
-				Snacks.picker.lsp_implementations()
-			end,
-			desc = "Goto Implementation",
-		},
-		{
-			"gy",
-			function()
-				Snacks.picker.lsp_type_definitions()
-			end,
-			desc = "Goto T[y]pe Definition",
-		},
+		-- LSP (gd, gD, gr, gI, gy are in lspconfig.lua)
 		{
 			"<leader>ss",
 			function()
