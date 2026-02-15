@@ -49,6 +49,14 @@ return {
 					colors.fg_gutter = fg_gutter
 					colors.fg_sidebar = fg_dark
 				end,
+				on_highlights = function(hl, c)
+					-- blink.cmp completion menu highlights
+					hl.BlinkCmpMenu = { bg = transparent and c.none or bg_dark, fg = fg }
+					hl.BlinkCmpMenuBorder = { bg = transparent and c.none or bg_dark, fg = border }
+					hl.BlinkCmpMenuSelection = { bg = bg_visual, fg = fg, bold = true }
+					hl.BlinkCmpDoc = { bg = transparent and c.none or bg_dark, fg = fg }
+					hl.BlinkCmpDocBorder = { bg = transparent and c.none or bg_dark, fg = border }
+				end,
 			})
 		end,
 	},
@@ -115,7 +123,7 @@ return {
 				flavour = "mocha", -- latte, frappe, macchiato, mocha
 				transparent_background = true,
 				integrations = {
-					cmp = true,
+					blink_cmp = true,
 					gitsigns = true,
 					treesitter = true,
 					telescope = true,
@@ -254,7 +262,6 @@ return {
 			})
 		end,
 	},
-
 	-- ============================================
 	-- GitHub - Light and dark GitHub themes
 	-- ============================================
@@ -278,16 +285,23 @@ return {
 	-- Xcode - Apple's Xcode color schemes
 	-- ============================================
 	{
-		"arzg/vim-colors-xcode",
+		"fraeso/xcodedark.nvim",
 		priority = 1000,
 		lazy = true,
 		config = function()
-			-- Xcode themes don't support transparency - use solid backgrounds
-			vim.g.xcodedark_green_comments = 1
-			vim.g.xcodedark_emph_types = 1
-			vim.g.xcodedark_emph_funcs = 1
-			vim.g.xcodedark_emph_idents = 1
-			vim.g.xcodedark_match_paren_style = 1
+			require("xcodedark").setup({
+				transparent = true,
+				integrations = {
+					blink = true,
+					telescope = true,
+					gitsigns = true,
+					bufferline = true,
+					which_key = true,
+					notify = true,
+					snacks = true,
+				},
+				terminal_colors = true,
+			})
 		end,
 	},
 }

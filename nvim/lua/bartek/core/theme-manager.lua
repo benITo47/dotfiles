@@ -73,6 +73,13 @@ function M.apply_theme(theme_name, silent)
 
 	M.switching = true
 
+	-- Reset cursor settings before applying new theme
+	-- Set consistent cursor: block for normal/visual, vertical line for insert
+	vim.opt.guicursor = "n-v-c:block,i-ci-ve:ver25,r-cr:hor20"
+	vim.api.nvim_set_hl(0, "Cursor", {})  -- Clear cursor highlights
+	vim.api.nvim_set_hl(0, "CursorInsert", {})
+	vim.api.nvim_set_hl(0, "CursorVisual", {})
+
 	local ok = pcall(vim.cmd.colorscheme, theme_name)
 	if ok then
 		M.current_theme = theme_name

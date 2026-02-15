@@ -13,7 +13,7 @@ macos-option-as-alt = left
 # Transparency (0.0 to 1.0)
 # 0.85 is a "sweet spot" where you see the wallpaper but text remains legible
 background-opacity = 0.85
-background-blur-radius = 20
+background-blur-radius = 25
 
 # Adds some breathing room inside the terminal window
 window-padding-x = 10

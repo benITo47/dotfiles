@@ -151,9 +151,23 @@ return {
 		{
 			"<leader>ff",
 			function()
-				Snacks.picker.files()
+				Snacks.picker.files({ hidden = true, ignored = true })
 			end,
-			desc = "Find Files",
+			desc = "Find ALL Files (by name)",
+		},
+		{
+			"<leader>fw",
+			function()
+				Snacks.picker.grep()
+			end,
+			desc = "Grep/Search File Contents",
+		},
+		{
+			"<leader>fz",
+			function()
+				Snacks.picker.lines()
+			end,
+			desc = "Fuzzy Find in Current Buffer",
 		},
 		{
 			"<leader>fg",
