@@ -265,7 +265,10 @@ return {
 		config = function()
 			require("github-theme").setup({
 				options = {
-					transparent = true,
+					transparent = false, -- Light themes need solid backgrounds
+					darken = {
+						floats = false,
+					},
 				},
 			})
 		end,
@@ -279,10 +282,12 @@ return {
 		priority = 1000,
 		lazy = true,
 		config = function()
+			-- Xcode themes don't support transparency - use solid backgrounds
 			vim.g.xcodedark_green_comments = 1
 			vim.g.xcodedark_emph_types = 1
 			vim.g.xcodedark_emph_funcs = 1
 			vim.g.xcodedark_emph_idents = 1
+			vim.g.xcodedark_match_paren_style = 1
 		end,
 	},
 }
