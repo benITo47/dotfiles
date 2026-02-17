@@ -46,7 +46,9 @@ return {
 				map("n", "<leader>dd", vim.diagnostic.open_float, opts)
 
 				opts.desc = "Show documentation for what is under cursor"
-				map("n", "K", vim.lsp.buf.hover, opts)
+				map("n", "K", function()
+					vim.lsp.buf.hover({ max_width = 150, max_height = 45 })
+				end, opts)
 
 				opts.desc = "Restart LSP"
 				map("n", "<leader>rs", ":LspRestart<CR>", opts)
@@ -61,145 +63,148 @@ return {
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 		end
 
-		-- Style hover to match blink.cmp documentation window
-		vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-			border = "rounded",
-			max_width = 80,
-			max_height = 30,
-			winhighlight = "Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder",
+		-- Neovim 0.11: vim.lsp.handlers overrides no longer work for hover windows.
+		-- Match blink.cmp doc highlight groups on any markdown floating window (hover, blink doc).
+		vim.api.nvim_create_autocmd("BufWinEnter", {
+			group = vim.api.nvim_create_augroup("LspHoverBlinkStyle", { clear = true }),
+			callback = function(args)
+				for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+					local cfg = vim.api.nvim_win_get_config(win)
+					if cfg.relative ~= "" and vim.bo[args.buf].filetype == "markdown" then
+						vim.wo[win].winhighlight =
+							"Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder,EndOfBuffer:BlinkCmpDocBorder"
+					end
+				end
+			end,
 		})
 
 		-- Standalone sourcekit setup with merged capabilities
 
-	-- Configure all LSP servers
-	-- Lua
-	vim.lsp.config("lua_ls", {
-		capabilities = capabilities,
-		settings = {
-			Lua = {
-				diagnostics = { globals = { "vim" } },
-				completion = { callSnippet = "Replace" },
-			},
-		},
-	})
-	vim.lsp.enable("lua_ls")
-
-	-- TypeScript/JavaScript
-	vim.lsp.config("ts_ls", {
-		capabilities = capabilities,
-		filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
-		on_attach = function(client)
-			client.server_capabilities.documentFormattingProvider = false
-		end,
-	})
-	vim.lsp.enable("ts_ls")
-
-	-- ESLint
-	vim.lsp.config("eslint", {
-		capabilities = capabilities,
-		on_attach = function(client, bufnr)
-			vim.api.nvim_create_autocmd("BufWritePre", {
-				buffer = bufnr,
-				command = "EslintFixAll",
-			})
-		end,
-		filetypes = { "javascript", "javascriptreact" },
-	})
-	vim.lsp.enable("eslint")
-
-	-- HTML
-	vim.lsp.config("html", {
-		capabilities = capabilities,
-		filetypes = { "html", "htmldjango" },
-	})
-	vim.lsp.enable("html")
-
-	-- CSS
-	vim.lsp.config("cssls", {
-		capabilities = capabilities,
-		filetypes = { "css", "scss", "sass", "less" },
-	})
-	vim.lsp.enable("cssls")
-
-	-- Python
-	vim.lsp.config("pyright", {
-		capabilities = capabilities,
-		filetypes = { "python" },
-	})
-	vim.lsp.enable("pyright")
-
-	-- Rust
-	vim.lsp.config("rust_analyzer", {
-		capabilities = capabilities,
-		filetypes = { "rust" },
-	})
-	vim.lsp.enable("rust_analyzer")
-
-	-- Bash
-	vim.lsp.config("bashls", {
-		capabilities = capabilities,
-		filetypes = { "sh", "bash", "zsh" },
-	})
-	vim.lsp.enable("bashls")
-
-	-- Docker
-	vim.lsp.config("dockerls", {
-		capabilities = capabilities,
-		filetypes = { "Dockerfile", "dockerfile" },
-	})
-	vim.lsp.enable("dockerls")
-
-	-- LTeX (Markdown/LaTeX)
-	vim.lsp.config("ltex", {
-		capabilities = capabilities,
-		settings = { ltex = { language = "en-EN" } },
-		filetypes = { "markdown", "tex", "plaintex" },
-	})
-	vim.lsp.enable("ltex")
-
-	-- Clangd (C/C++)
-	vim.lsp.config("clangd", {
-		cmd = {
-			"clangd",
-			"--background-index",
-			"--clang-tidy",
-			"--completion-style=detailed",
-			"--header-insertion=iwyu",
-			"--header-insertion-decorators",
-			"--pch-storage=memory",
-		},
-		capabilities = vim.tbl_deep_extend("force", capabilities, {
-			offsetEncoding = { "utf-16" },
-		}),
-		filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
-		root_dir = function(fname)
-			return require("lspconfig.util").root_pattern(
-				".clangd",
-				".clang-tidy",
-				".clang-format",
-				"compile_commands.json",
-				"compile_flags.txt",
-				"configure.ac",
-				".git"
-			)(fname) or vim.fn.getcwd()
-		end,
-		init_options = {
-			fallbackFlags = { "-std=c++20" },
-		},
-	})
-	vim.lsp.enable("clangd")
-
-		local sourcekit_capabilities = vim.tbl_deep_extend(
-			"force",
-			capabilities,
-			{
-				workspace = {
-					didChangeWatchedFiles = {
-						dynamicRegistration = true,
-					},
+		-- Configure all LSP servers
+		-- Lua
+		vim.lsp.config("lua_ls", {
+			capabilities = capabilities,
+			settings = {
+				Lua = {
+					diagnostics = { globals = { "vim" } },
+					completion = { callSnippet = "Replace" },
 				},
-			}
-		)
+			},
+		})
+		vim.lsp.enable("lua_ls")
+
+		-- TypeScript/JavaScript
+		vim.lsp.config("ts_ls", {
+			capabilities = capabilities,
+			filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+			on_attach = function(client)
+				client.server_capabilities.documentFormattingProvider = false
+			end,
+		})
+		vim.lsp.enable("ts_ls")
+
+		-- ESLint
+		vim.lsp.config("eslint", {
+			capabilities = capabilities,
+			on_attach = function(client, bufnr)
+				vim.api.nvim_create_autocmd("BufWritePre", {
+					buffer = bufnr,
+					command = "EslintFixAll",
+				})
+			end,
+			filetypes = { "javascript", "javascriptreact" },
+		})
+		vim.lsp.enable("eslint")
+
+		-- HTML
+		vim.lsp.config("html", {
+			capabilities = capabilities,
+			filetypes = { "html", "htmldjango" },
+		})
+		vim.lsp.enable("html")
+
+		-- CSS
+		vim.lsp.config("cssls", {
+			capabilities = capabilities,
+			filetypes = { "css", "scss", "sass", "less" },
+		})
+		vim.lsp.enable("cssls")
+
+		-- Python
+		vim.lsp.config("pyright", {
+			capabilities = capabilities,
+			filetypes = { "python" },
+		})
+		vim.lsp.enable("pyright")
+
+		-- Rust
+		vim.lsp.config("rust_analyzer", {
+			capabilities = capabilities,
+			filetypes = { "rust" },
+		})
+		vim.lsp.enable("rust_analyzer")
+
+		-- Bash
+		vim.lsp.config("bashls", {
+			capabilities = capabilities,
+			filetypes = { "sh", "bash", "zsh" },
+		})
+		vim.lsp.enable("bashls")
+
+		-- Docker
+		vim.lsp.config("dockerls", {
+			capabilities = capabilities,
+			filetypes = { "Dockerfile", "dockerfile" },
+		})
+		vim.lsp.enable("dockerls")
+
+		-- LTeX (Markdown/LaTeX)
+		vim.lsp.config("ltex", {
+			capabilities = capabilities,
+			settings = { ltex = { language = "en-EN" } },
+			filetypes = { "markdown", "tex", "plaintex" },
+		})
+		vim.lsp.enable("ltex")
+
+		-- Clangd (C/C++)
+		vim.lsp.config("clangd", {
+			cmd = {
+				"clangd",
+				"--background-index",
+				"--clang-tidy",
+				"--completion-style=detailed",
+				"--header-insertion=iwyu",
+				"--header-insertion-decorators",
+				"--pch-storage=memory",
+			},
+			capabilities = vim.tbl_deep_extend("force", capabilities, {
+				offsetEncoding = { "utf-16" },
+			}),
+			filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+			root_dir = function(fname)
+				return require("lspconfig.util").root_pattern(
+					".clangd",
+					".clang-tidy",
+					".clang-format",
+					"compile_commands.json",
+					"compile_flags.txt",
+					"configure.ac",
+					".git"
+				)(fname) or vim.fn.getcwd()
+			end,
+			init_options = {
+				fallbackFlags = { "-std=c++20" },
+			},
+		})
+		vim.lsp.enable("clangd")
+
+		local sourcekit_capabilities = vim.tbl_deep_extend("force", capabilities, {
+			workspace = {
+				didChangeWatchedFiles = {
+					dynamicRegistration = true,
+				},
+			},
+		})
 
 		vim.lsp.config("sourcekit", {
 			capabilities = sourcekit_capabilities,

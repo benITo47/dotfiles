@@ -31,3 +31,5 @@ opt.clipboard:append("unnamedplus")
 opt.splitright = true
 opt.splitbelow = true
 opt.undofile = true
+
+vim.o.winborder = "rounded" -- default rounded border for all floating windows (hover, diagnostics, etc.)
