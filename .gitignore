@@ -2,13 +2,13 @@
 *
 
 # Allow core nvim config files
-!init.lua
-!lazy-lock.json
+!nvim/init.lua
+!nvim/lazy-lock.json
 !.obsidian.vimrc
 
 # Allow lua directory and its contents
-!lua/
-!lua/**
+!nvim/lua/
+!nvim/lua/**
 
 # Allow .nvim directory
 !.nvim/

@@ -61,6 +61,14 @@ return {
 			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
 		end
 
+		-- Style hover to match blink.cmp documentation window
+		vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+			border = "rounded",
+			max_width = 80,
+			max_height = 30,
+			winhighlight = "Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder",
+		})
+
 		-- Standalone sourcekit setup with merged capabilities
 
 	-- Configure all LSP servers
