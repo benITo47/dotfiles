@@ -10,7 +10,7 @@ return {
 			javascriptreact = { "eslint_d" },
 			typescriptreact = { "eslint_d" },
 			svelte = { "eslint_d" },
-			python = { "pylint" },
+			python = { "ruff", "mypy" }, -- ruff for linting, mypy for type checking
 			swift = { "swiftlint" },
 			-- c = { "clangtidy" },
 			-- cpp = { "clangtidy" },

@@ -19,7 +19,7 @@ return {
 				graphql = { "prettier" },
 				liquid = { "prettier" },
 				lua = { "stylua" },
-				python = { "isort", "black" },
+				python = { "ruff_format", "ruff_organize_imports" },
 				cpp = { "clang-format" },
 				sh = { "beautysh" },
 				bash = { "beautysh" },
@@ -28,11 +28,19 @@ return {
 				zsh = { "beautysh" },
 				sql = { "sql-formatter" },
 			},
-			format_on_save = {
-				lsp_fallback = true,
-				async = false,
-				timeout_ms = 1000,
-			},
+			format_on_save = function(bufnr)
+				-- Check if format on save is enabled
+				local toggles = require("bartek.core.toggles")
+				if not toggles.state.format_on_save then
+					return
+				end
+
+				return {
+					lsp_fallback = true,
+					async = false,
+					timeout_ms = 1000,
+				}
+			end,
 		})
 
 		vim.keymap.set({ "n", "v" }, "<leader>mp", function()

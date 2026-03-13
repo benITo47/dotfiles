@@ -16,6 +16,12 @@ return {
 			callback = function(ev)
 				local opts = { buffer = ev.buf, silent = true }
 
+				-- Enable inlay hints if supported
+				local client = vim.lsp.get_client_by_id(ev.data.client_id)
+				if client and client.server_capabilities.inlayHintProvider then
+					vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
+				end
+
 				-- LSP Navigation
 				opts.desc = "Goto Definition"
 				map("n", "gd", vim.lsp.buf.definition, opts)
@@ -88,6 +94,13 @@ return {
 				Lua = {
 					diagnostics = { globals = { "vim" } },
 					completion = { callSnippet = "Replace" },
+					hint = {
+						enable = true,
+						setType = true,
+						paramName = "All",
+						paramType = true,
+						arrayIndex = "Disable",
+					},
 				},
 			},
 		})
@@ -97,6 +110,32 @@ return {
 		vim.lsp.config("ts_ls", {
 			capabilities = capabilities,
 			filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+			settings = {
+				typescript = {
+					inlayHints = {
+						includeInlayParameterNameHints = "all",
+						includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+						includeInlayFunctionParameterTypeHints = true,
+						includeInlayVariableTypeHints = true,
+						includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+						includeInlayPropertyDeclarationTypeHints = true,
+						includeInlayFunctionLikeReturnTypeHints = true,
+						includeInlayEnumMemberValueHints = true,
+					},
+				},
+				javascript = {
+					inlayHints = {
+						includeInlayParameterNameHints = "all",
+						includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+						includeInlayFunctionParameterTypeHints = true,
+						includeInlayVariableTypeHints = true,
+						includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+						includeInlayPropertyDeclarationTypeHints = true,
+						includeInlayFunctionLikeReturnTypeHints = true,
+						includeInlayEnumMemberValueHints = true,
+					},
+				},
+			},
 			on_attach = function(client)
 				client.server_capabilities.documentFormattingProvider = false
 			end,
@@ -130,17 +169,81 @@ return {
 		})
 		vim.lsp.enable("cssls")
 
-		-- Python
-		vim.lsp.config("pyright", {
+		-- Python - using basedpyright for better venv support
+		vim.lsp.config("basedpyright", {
 			capabilities = capabilities,
 			filetypes = { "python" },
+			settings = {
+				basedpyright = {
+					analysis = {
+						typeCheckingMode = "basic", -- Options: "off", "basic", "standard", "strict"
+						autoSearchPaths = true,
+						useLibraryCodeForTypes = true,
+						diagnosticMode = "workspace", -- "openFilesOnly" or "workspace"
+						autoImportCompletions = true,
+						inlayHints = {
+							variableTypes = true,
+							functionReturnTypes = true,
+							callArgumentNames = true,
+							pytestParameters = true,
+						},
+					},
+				},
+				python = {
+					analysis = {
+						autoSearchPaths = true,
+						useLibraryCodeForTypes = true,
+						diagnosticMode = "workspace",
+					},
+					-- Virtual environment detection
+					venvPath = ".",
+					pythonPath = vim.fn.exepath("python3") or vim.fn.exepath("python"),
+				},
+			},
+			before_init = function(_, config)
+				-- Auto-detect virtual environment
+				local venv = vim.fn.getenv("VIRTUAL_ENV")
+				if venv ~= vim.NIL and venv ~= "" then
+					config.settings.python.pythonPath = venv .. "/bin/python"
+				else
+					-- Look for common venv directories
+					local venv_paths = { "venv", ".venv", "env", ".env" }
+					for _, path in ipairs(venv_paths) do
+						local venv_python = vim.fn.getcwd() .. "/" .. path .. "/bin/python"
+						if vim.fn.executable(venv_python) == 1 then
+							config.settings.python.pythonPath = venv_python
+							break
+						end
+					end
+				end
+			end,
 		})
-		vim.lsp.enable("pyright")
+		vim.lsp.enable("basedpyright")
 
 		-- Rust
 		vim.lsp.config("rust_analyzer", {
 			capabilities = capabilities,
 			filetypes = { "rust" },
+			settings = {
+				["rust-analyzer"] = {
+					inlayHints = {
+						bindingModeHints = { enable = false }, -- Don't show & or &mut
+						chainingHints = { enable = true }, -- Show types for method chains
+						closingBraceHints = { enable = false }, -- Don't show closing brace labels
+						closureReturnTypeHints = { enable = "never" }, -- Don't show closure return types
+						lifetimeElisionHints = { enable = "never" }, -- Don't show elided lifetimes
+						maxLength = 25,
+						parameterHints = { enable = false }, -- Don't show parameter names (redundant!)
+						reborrowHints = { enable = "never" }, -- Don't show reborrow hints
+						renderColons = true,
+						typeHints = {
+							enable = true, -- Only show inferred variable types
+							hideClosureInitialization = true,
+							hideNamedConstructor = true,
+						},
+					},
+				},
+			},
 		})
 		vim.lsp.enable("rust_analyzer")
 
@@ -176,11 +279,12 @@ return {
 				"--header-insertion=iwyu",
 				"--header-insertion-decorators",
 				"--pch-storage=memory",
+				"--inlay-hints",
 			},
 			capabilities = vim.tbl_deep_extend("force", capabilities, {
 				offsetEncoding = { "utf-16" },
 			}),
-			filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+			filetypes = { "c", "tpp", "cpp", "objc", "objcpp", "cuda", "proto" },
 			root_dir = function(fname)
 				return require("lspconfig.util").root_pattern(
 					".clangd",
