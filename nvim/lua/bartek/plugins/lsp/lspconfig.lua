@@ -16,11 +16,7 @@ return {
 			callback = function(ev)
 				local opts = { buffer = ev.buf, silent = true }
 
-				-- Enable inlay hints if supported
-				local client = vim.lsp.get_client_by_id(ev.data.client_id)
-				if client and client.server_capabilities.inlayHintProvider then
-					vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
-				end
+				-- Inlay hints are disabled by default; toggle with <leader>ti
 
 				-- LSP Navigation
 				opts.desc = "Goto Definition"

@@ -21,12 +21,17 @@ return {
 				lua = { "stylua" },
 				python = { "ruff_format", "ruff_organize_imports" },
 				cpp = { "clang-format" },
-				sh = { "beautysh" },
-				bash = { "beautysh" },
+				-- sh = { "beautysh" },
+				-- bash = { "beautysh" },
+				-- zsh = { "beautysh" },
 				rust = { "rustfmt" },
 				swift = { "swiftformat" },
-				zsh = { "beautysh" },
 				sql = { "sql-formatter" },
+			},
+			formatters = {
+				-- beautysh = {
+				-- 	prepend_args = { "-i", "2" },
+				-- },
 			},
 			format_on_save = function(bufnr)
 				-- Check if format on save is enabled

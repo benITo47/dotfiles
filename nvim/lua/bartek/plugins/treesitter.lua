@@ -40,6 +40,7 @@ return {
 				"swift",
 				"cpp",
 				"rust",
+				"java",
 			},
 
 			incremental_selection = {

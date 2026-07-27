@@ -10,6 +10,7 @@ return {
 			tree = true,
 			follow_file = true,
 		},
+		image = { enabled = true },
 		indent = { enabled = true },
 		input = { enabled = true },
 		notifier = {
