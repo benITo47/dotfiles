@@ -28,6 +28,19 @@ opt.backspace = "indent,eol,start"
 
 opt.clipboard:append("unnamedplus")
 
+-- Over ssh there is no local clipboard tool worth using (xclip without DISPLAY just
+-- fails silently), so push yanks to the *local* terminal with OSC52.
+if vim.env.SSH_TTY or vim.env.SSH_CONNECTION then
+	local osc52 = require("vim.ui.clipboard.osc52")
+	vim.g.clipboard = {
+		name = "OSC 52",
+		copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+		-- OSC52 reads hang on most terminals; paste from the unnamed register instead
+		paste = { ["+"] = function() return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") } end },
+	}
+	vim.g.clipboard.paste["*"] = vim.g.clipboard.paste["+"]
+end
+
 opt.splitright = true
 opt.splitbelow = true
 opt.undofile = true

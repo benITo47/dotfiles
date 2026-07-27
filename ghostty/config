@@ -21,7 +21,11 @@ window-padding-y = 10
 
 # --- Mouse & Behavior ---
 mouse-hide-while-typing = true
-copy-on-select = true
+# on macOS the default lands in the (unused) selection clipboard
+copy-on-select = clipboard
+
+# Let remote apps write the clipboard via OSC52 without a prompt every time
+clipboard-write = allow
 
 # theme = catppuccin-mocha
 

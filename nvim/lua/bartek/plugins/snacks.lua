@@ -572,6 +572,14 @@ return {
 		},
 	},
 	init = function()
+		-- Over ssh (and behind tmux) the terminal query answers "tmux", not "ghostty",
+		-- so snacks decides the kitty graphics protocol is unsupported. We know the
+		-- terminal on the other end is Ghostty, so tell it. Set SNACKS_GHOSTTY=0 when
+		-- connecting from a terminal without graphics support.
+		if (vim.env.SSH_TTY or vim.env.SSH_CONNECTION) and not vim.env.SNACKS_GHOSTTY then
+			vim.env.SNACKS_GHOSTTY = "1"
+		end
+
 		vim.api.nvim_create_autocmd("User", {
 			pattern = "VeryLazy",
 			callback = function()
